@@ -1106,7 +1106,7 @@ local FOV             = 150        -- คุมด้วย Slider
 --// ================= GUN LIST (ลิสต์ล้วน) =================
 local GunNames = {
 	"P226","MP5","M24","Draco","Glock","Sawnoff","Uzi","G3","C9",
-	"Hunting Rifle","Anaconda","AK47","Remington","Double Barrel"
+	"Hunting Rifle","Anaconda","AK47","Skorpion","Remington","Double Barrel"
 }
 
 --// ================= FOV CIRCLE =================
