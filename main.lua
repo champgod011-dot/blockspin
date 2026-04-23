@@ -361,10 +361,17 @@ local function predictPosition(part, root)
         0
     )
 
+    local headOffset = Vector3.new(0, 0, 0)
+
+    if part.Name == "Head" and root then
+        headOffset = Vector3.new(0, 0.15, 0)
+    end
+
     return part.Position
         + horizontalPrediction
         + verticalPrediction
         + jumpBoost
+        + headOffset
 end
 
 local function isBehindWall(origin, target)
