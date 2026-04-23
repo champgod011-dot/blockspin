@@ -329,15 +329,42 @@ local function calculateVelocity(player)
     return avg
 end
 
-local function predictPosition(part, _root)
-    if not part then return Vector3.zero end
-    local parentModel = part.Parent
-    local player = parentModel and Players:GetPlayerFromCharacter(parentModel)
-    if not player then return part.Position end
-    local velocity = calculateVelocity(player) or Vector3.zero
-    local ping = (getPing and getPing()) or 0.1
-    if ping < 0 then ping = 0.1 end
-    return part.Position + (velocity * ping * VELOCITY_SCALE)
+local function predictPosition(part, root)
+    if not part or not root then
+        return part and part.Position or Vector3.zero
+    end
+
+    local velocity = root.Velocity
+    local ping = getPing()
+
+    if ping < 0.07 then
+        ping = 0.07
+    elseif ping > 0.25 then
+        ping = 0.25
+    end
+
+    local horizontalPrediction = Vector3.new(
+        velocity.X,
+        0,
+        velocity.Z
+    ) * ping * 1.22
+
+    local verticalPrediction = Vector3.new(
+        0,
+        math.clamp(velocity.Y * ping * 0.28, -4, 4),
+        0
+    )
+
+    local jumpBoost = Vector3.new(
+        0,
+        velocity.Y > 15 and 0.6 or 0,
+        0
+    )
+
+    return part.Position
+        + horizontalPrediction
+        + verticalPrediction
+        + jumpBoost
 end
 
 local function isBehindWall(origin, target)
