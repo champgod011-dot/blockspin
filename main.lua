@@ -2445,6 +2445,10 @@ local function Bootsfps()
 	end
 end
 
+-- =========================
+-- Button ใน Tab Misc
+-- =========================
+
 MiscTab:Button({
 	Title = "Bootsfps",
 	Icon = "zap",
@@ -2452,6 +2456,10 @@ MiscTab:Button({
 		Bootsfps()
 	end
 })
+
+-- =========================
+-- RTX ON ULTRA (ภาพโคตรสวย)
+-- =========================
 
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
@@ -2547,6 +2555,10 @@ local function RTX_ON()
 		end
 	end
 end
+
+-- =========================
+-- Button (Tab Misc)
+-- =========================
 
 MiscTab:Button({
 	Title = "RTX ON",
