@@ -335,13 +335,15 @@ local function predictPosition(part, root)
     local parentModel = part.Parent
     local player = parentModel and Players:GetPlayerFromCharacter(parentModel)
 
-    -- ใช้ history-based velocity แทน root.Velocity
     local velocity = (player and calculateVelocity(player)) or Vector3.zero
 
     local ping = getPing()
     ping = math.clamp(ping, 0.07, 0.22)
 
     local speed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+    local distance = (part.Position - Camera.CFrame.Position).Magnitude
+    local leadTime = ping + (distance / 320)
+
     local multiplier = 1.15
 
     if speed > 50 then
@@ -354,11 +356,11 @@ local function predictPosition(part, root)
 
     local horizontalPrediction = Vector3.new(
         velocity.X, 0, velocity.Z
-    ) * ping * multiplier
+    ) * leadTime * multiplier
 
     local verticalPrediction = Vector3.new(
         0,
-        math.clamp(velocity.Y * ping * 0.22, -3, 3),
+        math.clamp(velocity.Y * leadTime * 0.22, -3, 3),
         0
     )
 
@@ -370,7 +372,11 @@ local function predictPosition(part, root)
 
     local headOffset = Vector3.new(0, 0, 0)
     if part.Name == "Head" then
-        headOffset = Vector3.new(0, speed > 22 and 0.10 or 0.05, 0)
+        headOffset = Vector3.new(
+            0,
+            speed > 22 and 0.10 or 0.05,
+            0
+        )
     end
 
     return part.Position
