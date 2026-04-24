@@ -2393,38 +2393,53 @@ MiscTab:Button({
 })
 Config:Register("ClaimAllQuest", MiscTab)
 
--- ── FPS / Visual ──────────────────────────────────────────────
-MiscTab:Section({ Title = "Visual:" })
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
 local function Bootsfps()
+	-- ลบท้องฟ้า + เอฟเฟกต์
 	for _, v in ipairs(Lighting:GetChildren()) do
-		if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("BloomEffect")
-		or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect")
+		if v:IsA("Sky")
+		or v:IsA("Atmosphere")
+		or v:IsA("BloomEffect")
+		or v:IsA("SunRaysEffect")
+		or v:IsA("ColorCorrectionEffect")
 		or v:IsA("DepthOfFieldEffect") then
 			v:Destroy()
 		end
 	end
+
+	-- ปิดเงา / แสง
 	Lighting.GlobalShadows = false
 	Lighting.Brightness = 0
 	Lighting.FogEnd = 9e9
 	Lighting.EnvironmentDiffuseScale = 0
 	Lighting.EnvironmentSpecularScale = 0
-	local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
+	-- Terrain กาก
 	if Terrain then
 		Terrain.WaterWaveSize = 0
 		Terrain.WaterWaveSpeed = 0
 		Terrain.WaterReflectance = 0
 		Terrain.WaterTransparency = 1
 	end
+
+	-- ทำทั้งแมพเป็นสีเทา / plastic
 	for _, v in ipairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") then
 			v.Material = Enum.Material.Plastic
 			v.Reflectance = 0
 			v.CastShadow = false
 			v.Color = Color3.fromRGB(120,120,120)
+
 		elseif v:IsA("Decal") or v:IsA("Texture") then
 			v.Transparency = 1
-		elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") then
+
+		elseif v:IsA("ParticleEmitter")
+		or v:IsA("Trail")
+		or v:IsA("Beam") then
 			v.Enabled = false
 		end
 	end
@@ -2435,17 +2450,26 @@ MiscTab:Button({
 	Icon = "zap",
 	Callback = function()
 		Bootsfps()
-	end,
+	end
 })
 
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
 local function RTX_ON()
+	-- ล้างของเก่า
 	for _, v in ipairs(Lighting:GetChildren()) do
-		if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("SunRaysEffect")
-		or v:IsA("ColorCorrectionEffect") or v:IsA("DepthOfFieldEffect")
+		if v:IsA("Atmosphere")
+		or v:IsA("BloomEffect")
+		or v:IsA("SunRaysEffect")
+		or v:IsA("ColorCorrectionEffect")
+		or v:IsA("DepthOfFieldEffect")
 		or v:IsA("Sky") then
 			v:Destroy()
 		end
 	end
+
+	-- ===== Sky =====
 	local Sky = Instance.new("Sky")
 	Sky.SkyboxBk = "rbxassetid://159454299"
 	Sky.SkyboxDn = "rbxassetid://159454296"
@@ -2455,6 +2479,8 @@ local function RTX_ON()
 	Sky.SkyboxUp = "rbxassetid://159454288"
 	Sky.SunAngularSize = 21
 	Sky.Parent = Lighting
+
+	-- ===== Lighting Core =====
 	Lighting.Technology = Enum.Technology.Future
 	Lighting.GlobalShadows = true
 	Lighting.ShadowSoftness = 1
@@ -2463,6 +2489,8 @@ local function RTX_ON()
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 1
 	Lighting.ClockTime = 14
+
+	-- ===== Atmosphere =====
 	local Atmosphere = Instance.new("Atmosphere")
 	Atmosphere.Density = 0.35
 	Atmosphere.Offset = 0.25
@@ -2471,34 +2499,45 @@ local function RTX_ON()
 	Atmosphere.Glare = 0.35
 	Atmosphere.Haze = 1.2
 	Atmosphere.Parent = Lighting
+
+	-- ===== Bloom =====
 	local Bloom = Instance.new("BloomEffect")
 	Bloom.Intensity = 1.2
 	Bloom.Size = 56
 	Bloom.Threshold = 0.85
 	Bloom.Parent = Lighting
+
+	-- ===== Sun Rays =====
 	local SunRays = Instance.new("SunRaysEffect")
 	SunRays.Intensity = 0.25
 	SunRays.Spread = 0.85
 	SunRays.Parent = Lighting
+
+	-- ===== Color Correction =====
 	local CC = Instance.new("ColorCorrectionEffect")
 	CC.Brightness = 0.05
 	CC.Contrast = 0.25
 	CC.Saturation = 0.35
 	CC.TintColor = Color3.fromRGB(255, 245, 235)
 	CC.Parent = Lighting
+
+	-- ===== Depth Of Field =====
 	local DOF = Instance.new("DepthOfFieldEffect")
 	DOF.FarIntensity = 0.25
 	DOF.NearIntensity = 0.05
 	DOF.FocusDistance = 60
 	DOF.InFocusRadius = 40
 	DOF.Parent = Lighting
-	local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
+	-- ===== Terrain น้ำใส =====
 	if Terrain then
 		Terrain.WaterWaveSize = 1
 		Terrain.WaterWaveSpeed = 15
 		Terrain.WaterReflectance = 1
 		Terrain.WaterTransparency = 0.05
 	end
+
+	-- ===== วัสดุเงาสวย =====
 	for _, v in ipairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") then
 			v.CastShadow = true
@@ -2514,7 +2553,7 @@ MiscTab:Button({
 	Icon = "sparkles",
 	Callback = function()
 		RTX_ON()
-	end,
+	end
 })
 
 -- ── Config Management ─────────────────────────────────────────
