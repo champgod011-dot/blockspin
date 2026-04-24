@@ -2380,7 +2380,14 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 
+-- ลบ GUI เก่าถ้ามี
+pcall(function()
+    CoreGui:FindFirstChild("DesyncUI"):Destroy()
+end)
+
 local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ล่องหนเปิดละรอเซิฟดึงกลับ"
+ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
 local Frame = Instance.new("Frame")
@@ -2388,32 +2395,13 @@ Frame.Size = UDim2.new(0, 180, 0, 60)
 Frame.Position = UDim2.new(0, 20, 0, 20)
 Frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
 Frame.BorderSizePixel = 0
+Frame.Active = true -- สำคัญสำหรับลาก
+Frame.Selectable = true
 Frame.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner", Frame)
+local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 50, 0, 24)
-ToggleButton.Position = UDim2.new(1, -60, 0.5, -12)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(40,40,40)
-ToggleButton.BorderSizePixel = 0
-ToggleButton.Text = ""
-ToggleButton.AutoButtonColor = false
-ToggleButton.Parent = Frame
-
-local ToggleCorner = Instance.new("UICorner", ToggleButton)
-ToggleCorner.CornerRadius = UDim.new(1, 0)
-
-local Knob = Instance.new("Frame")
-Knob.Size = UDim2.new(0, 20, 0, 20)
-Knob.Position = UDim2.new(0, 2, 0.5, -10)
-Knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
-Knob.BorderSizePixel = 0
-Knob.Parent = ToggleButton
-
-local KnobCorner = Instance.new("UICorner", Knob)
-KnobCorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = Frame
 
 local Label = Instance.new("TextLabel")
 Label.Size = UDim2.new(1, -70, 1, 0)
@@ -2426,58 +2414,95 @@ Label.Font = Enum.Font.SourceSans
 Label.TextSize = 16
 Label.Parent = Frame
 
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 50, 0, 24)
+ToggleButton.Position = UDim2.new(1, -60, 0.5, -12)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(40,40,40)
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Text = ""
+ToggleButton.AutoButtonColor = false
+ToggleButton.Parent = Frame
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+ToggleCorner.Parent = ToggleButton
+
+local Knob = Instance.new("Frame")
+Knob.Size = UDim2.new(0, 20, 0, 20)
+Knob.Position = UDim2.new(0, 2, 0.5, -10)
+Knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
+Knob.BorderSizePixel = 0
+Knob.Parent = ToggleButton
+
+local KnobCorner = Instance.new("UICorner")
+KnobCorner.CornerRadius = UDim.new(1, 0)
+KnobCorner.Parent = Knob
+
 local Toggled = false
 
 local function updateToggle(state)
-local knobPos = state and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
-local bgColor = state and Color3.fromRGB(80,80,80) or Color3.fromRGB(40,40,40)
+    local knobPos = state
+        and UDim2.new(1, -22, 0.5, -10)
+        or UDim2.new(0, 2, 0.5, -10)
 
-TweenService:Create(Knob, TweenInfo.new(0.2), {Position = knobPos}):Play()
-TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = bgColor}):Play()
+    local bgColor = state
+        and Color3.fromRGB(80,80,80)
+        or Color3.fromRGB(40,40,40)
 
-if plsraknet and plsraknet.desync then
-plsraknet.desync(state)
-end
+    TweenService:Create(
+        Knob,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Position = knobPos}
+    ):Play()
 
+    TweenService:Create(
+        ToggleButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = bgColor}
+    ):Play()
+
+    if plsraknet and plsraknet.desync then
+        plsraknet.desync(state)
+    end
 end
 
 ToggleButton.MouseButton1Click:Connect(function()
-Toggled = not Toggled
-updateToggle(Toggled)
+    Toggled = not Toggled
+    updateToggle(Toggled)
 end)
 
--- Draggable
-local dragging, dragInput, dragStart, startPos
+local dragging = false
+local dragStart
+local startPos
 
 Frame.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = true
-dragStart = input.Position
-startPos = Frame.Position
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
 
-input.Changed:Connect(function()
-if input.UserInputState == Enum.UserInputState.End then
-dragging = false
-end
-end)
-end
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
 
-end)
-
-Frame.InputChanged:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseMovement then
-dragInput = input
-end
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 
 UIS.InputChanged:Connect(function(input)
-if input == dragInput and dragging then
-local delta = input.Position - dragStart
-Frame.Position = UDim2.new(
-startPos.X.Scale,
-startPos.X.Offset + delta.X,
-startPos.Y.Scale,
-startPos.Y.Offset + delta.Y
-)
-end
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        local delta = input.Position - dragStart
+
+        Frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
 end)
