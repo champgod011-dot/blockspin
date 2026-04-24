@@ -1986,6 +1986,7 @@ CharTab:Section({ Title = "CHARACTER:" })
 
 local DesyncToggle = CharTab:Toggle({
     Title   = "Desync",
+    Desc    = "เปิดละวิ่งไปข้างหน้ารอจนกว่าเซิฟจะดึงกลับค่อยใช้ได้|Open the server and run forward, waiting until the server pulls you back.",
     Default = false,
     Callback = function(v)
         local plsraknet = Raknet or raknet
