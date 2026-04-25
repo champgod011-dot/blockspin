@@ -1809,16 +1809,38 @@ local FOVSlider = CombatTab:Slider({
 })
 Config:Register("FOVRadius", FOVSlider)
 
-local FriendInput = CombatTab:Input({
-    Title       = "Safe Friend",
-    Desc        = "",
-    Value       = "",
-    InputIcon   = "shield-check",
-    Type        = "Input",
-    Placeholder = "",
+local function getPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
+        end
+    end
+    return names
+end
+
+local FriendDropdown = CombatTab:Dropdown({
+    Title    = "Safe Friend",
+    Desc     = "Select players to whitelist",
+    Values   = getPlayerNames(),
+    Default  = {},
+    Multi    = true,
     Callback = function(v)
         excludedPlayers = {}
-        for word in string.gmatch(v, "%S+") do table.insert(excludedPlayers, word) end
+        if type(v) == "table" then
+            for name, selected in pairs(v) do
+                if type(name) == "string" and selected == true then
+                    table.insert(excludedPlayers, name)
+                end
+            end
+            if #excludedPlayers == 0 then
+                for _, name in ipairs(v) do
+                    if type(name) == "string" then
+                        table.insert(excludedPlayers, name)
+                    end
+                end
+            end
+        end
         for _, player in pairs(Players:GetPlayers()) do
             if espData[player] and espData[player].drawings then
                 espData[player].drawings[1].Color =
@@ -1827,7 +1849,14 @@ local FriendInput = CombatTab:Input({
         end
     end,
 })
-Config:Register("FriendsList", FriendInput)
+Config:Register("FriendsList", FriendDropdown)
+
+Players.PlayerAdded:Connect(function()
+    pcall(function() FriendDropdown:Refresh(getPlayerNames(), true) end)
+end)
+Players.PlayerRemoving:Connect(function()
+    pcall(function() FriendDropdown:Refresh(getPlayerNames(), true) end)
+end)
 
 pcall(function() CombatTab:Divider() end)
 
