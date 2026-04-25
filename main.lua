@@ -329,6 +329,20 @@ local function calculateVelocity(player)
     return avg
 end
 
+-- วัด ping จริงแบบ dynamic (ไม่ clamp ตายตัว)
+local function getAdaptivePing()
+    local raw = getPing()
+    -- smooth ด้วย running average 10 frame กันกระโดด
+    pingHistory = pingHistory or {}
+    table.insert(pingHistory, raw)
+    if #pingHistory > 10 then table.remove(pingHistory, 1) end
+    local sum = 0
+    for _, v in ipairs(pingHistory) do sum = sum + v end
+    local avg = sum / #pingHistory
+    -- clamp แบบ dynamic: min = avg*0.7, max = avg*1.5
+    return math.clamp(raw, avg * 0.7, avg * 1.5)
+end
+
 local function predictPosition(part, root)
     if not part then return Vector3.zero end
 
@@ -336,12 +350,31 @@ local function predictPosition(part, root)
     local player = parentModel and Players:GetPlayerFromCharacter(parentModel)
     local velocity = (player and calculateVelocity(player)) or Vector3.zero
 
-    local ping = math.clamp(getPing(), 0.06, 0.20)
+    -- ตรวจรถ → วัด velocity จริงของ seat อัตโนมัติ
+    local hum = parentModel and parentModel:FindFirstChildOfClass("Humanoid")
+    local seat = hum and hum.SeatPart
+    if seat then
+        local sv = seat.AssemblyLinearVelocity
+        local seatSpeed = sv.Magnitude
+        local histSpeed = velocity.Magnitude
 
-    -- speed แนวนอนเท่านั้น (แม่นกว่า magnitude รวม Y)
+        -- ถ้า seat เร็วกว่า history มาก = รถเร็ว ให้น้ำหนัก seat มากขึ้น
+        local seatWeight
+        if seatSpeed > histSpeed * 2 then
+            seatWeight = 0.85   -- รถเร็วมาก
+        elseif seatSpeed > histSpeed * 1.3 then
+            seatWeight = 0.70   -- รถเร็วปานกลาง
+        else
+            seatWeight = 0.50   -- รถช้า / ใกล้เคียง history
+        end
+
+        velocity = sv * seatWeight + velocity * (1 - seatWeight)
+    end
+
+    local ping = getAdaptivePing()
+
     local hSpeed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
 
-    -- multiplier ละเอียดขึ้น + ชดเชยการเปลี่ยนทิศ
     local multiplier
     if     hSpeed > 60 then multiplier = 1.50
     elseif hSpeed > 50 then multiplier = 1.42
@@ -351,21 +384,18 @@ local function predictPosition(part, root)
     else                     multiplier = 1.05
     end
 
-    -- ถ้า ping สูง ลด multiplier นิดหน่อยเพื่อไม่ over-predict
-    if ping > 0.15 then
-        multiplier = multiplier * 0.93
-    end
+    -- ping สูงเพิ่ม multiplier, ping ต่ำลด (auto ตามเซิร์ฟ)
+    local pingFactor = 1 + (ping - 0.10) * 0.4
+    multiplier = multiplier * math.clamp(pingFactor, 0.90, 1.20)
 
     local horizontal = Vector3.new(velocity.X, 0, velocity.Z) * ping * multiplier
 
-    -- vertical คมขึ้น: เพิ่ม coefficient จาก 0.22 → 0.30
     local vertical = Vector3.new(
         0,
         math.clamp(velocity.Y * ping * 0.30, -4, 4),
         0
     )
 
-    -- jump boost ละเอียดขึ้น
     local jumpBoost = Vector3.new(
         0,
         velocity.Y > 20 and 0.50
@@ -1827,9 +1857,18 @@ local FriendDropdown = CombatTab:Dropdown({
     Multi    = true,
     Callback = function(v)
         excludedPlayers = {}
-        for name, selected in pairs(v) do
-            if not selected then
-                table.insert(excludedPlayers, name)
+        if type(v) == "table" then
+            for name, selected in pairs(v) do
+                if type(name) == "string" and selected == true then
+                    table.insert(excludedPlayers, name)
+                end
+            end
+            if #excludedPlayers == 0 then
+                for _, name in ipairs(v) do
+                    if type(name) == "string" then
+                        table.insert(excludedPlayers, name)
+                    end
+                end
             end
         end
         for _, player in pairs(Players:GetPlayers()) do
