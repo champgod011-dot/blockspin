@@ -474,14 +474,20 @@ end
 --  FOV Circle
 -- ══════════════════════════════════════════════════════════════
 if not isMobile then
-    fovCircle             = Drawing.new("Circle")
-fovCircle.Color       = Color3.fromRGB(255, 255, 255)
-fovCircle.Thickness   = 1.4
-fovCircle.NumSides    = 64
-fovCircle.Filled      = false
-fovCircle.Transparency = 1
-fovCircle.Radius      = fovRadius
-fovCircle.Visible     = false
+    local FovSegments = 6
+    local FovLines = {}
+    for i = 1, FovSegments do
+        local Line = Drawing.new("Line")
+        Line.Visible = false
+        Line.Thickness = 1.5
+        Line.Color = Color3.fromHSV(i / FovSegments, 1, 1)
+        FovLines[i] = Line
+    end
+    fovCircle = {
+        Visible = false,
+        _lines = FovLines,
+        _segments = FovSegments
+    }
 else
     local fovGui = Instance.new("ScreenGui")
     fovGui.Name   = "MobileFOV"
@@ -623,17 +629,20 @@ RunService.RenderStepped:Connect(function()
 
         -- FOV circle
         if fovCircle then
-            fovCircle.Visible = silentAimEnabled
-            if silentAimEnabled then
-                if isMobile then
-                    fovCircle.Position = UDim2.fromScale(0.5, 0.5)
-                    fovCircle.Size     = UDim2.fromOffset(fovRadius * 2, fovRadius * 2)
-                else
-                    fovCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                    fovCircle.Radius   = fovRadius
+            if isMobile then
+                fovCircle.Visible = silentAimEnabled
+                fovCircle.Position = UDim2.fromScale(0.5, 0.5)
+                fovCircle.Size     = UDim2.fromOffset(fovRadius * 2, fovRadius * 2)
+            else
+                local Center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                for i = 1, fovCircle._segments do
+                    local angle1 = math.rad((i - 1) * (360 / fovCircle._segments))
+                    local angle2 = math.rad(i * (360 / fovCircle._segments))
+                    fovCircle._lines[i].From = Center + Vector2.new(math.cos(angle1) * fovRadius, math.sin(angle1) * fovRadius)
+                    fovCircle._lines[i].To   = Center + Vector2.new(math.cos(angle2) * fovRadius, math.sin(angle2) * fovRadius)
+                    fovCircle._lines[i].Visible = silentAimEnabled
                 end
-            end
-        end
+			end
 
         -- Tracer / Red Line
         if closestPlayer and closestPlayer.Character then
