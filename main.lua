@@ -68,7 +68,7 @@ local HRP          = Character:WaitForChild("HumanoidRootPart")
 local Camera       = Workspace.CurrentCamera
 
 -- ── Misc Setup ───────────────────────────────────────────────
-local isMobile        = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local isMobile        = false
 local DroppedItems    = Workspace:WaitForChild("DroppedItems")
 local itemDrawings    = {}    -- DroppedItem ESP drawings
 local espData         = {}    -- Player ESP data
