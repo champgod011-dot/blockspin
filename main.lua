@@ -178,7 +178,7 @@ if WindUI then
         Author     = "Block spin | Free💵",
         Folder     = "mercyhub",
         Size       = UDim2.fromOffset(650, 400),
-        Theme      = "Sky",
+        Theme      = "Ruby",
         Transparent = true,
         Resizable  = true,
         KeyCode    = Enum.KeyCode.G,
