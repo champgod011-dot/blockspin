@@ -510,7 +510,7 @@ end
 --  FOV Circle
 -- ══════════════════════════════════════════════════════════════
 if not isMobile then
-    local FovSegments = 6
+    local FovSegments = 8
     local FovLines = {}
     for i = 1, FovSegments do
         local Line = Drawing.new("Line")
