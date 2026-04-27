@@ -1,39 +1,3 @@
-local HttpService = game:GetService("HttpService")
-
-task.spawn(function()
-    pcall(function()
-        local Player = game.Players.LocalPlayer
-        local Executor = (identifyexecutor and identifyexecutor()) or "Unknown"
-        local Data = {
-            ["embeds"] = {{
-                ["title"] = "BlockSpin Notification 🚀",
-                ["description"] = "มีคนรันสคริปต์ของคุณแล้ว!",
-                ["color"] = 3066993,
-                ["fields"] = {
-                    {["name"] = "🌟 คนใช้", ["value"] = "```" .. Player.Name .. " (" .. Player.UserId .. ")```", ["inline"] = false},
-                    {["name"] = "📱 อุปกรณ์", ["value"] = "Android 🤖", ["inline"] = true},
-                    {["name"] = "📛 Executor", ["value"] = "```" .. Executor .. "```", ["inline"] = true},
-                    {["name"] = "🌍 แมพ", ["value"] = "BlockSpin 🔪", ["inline"] = false},
-                    {["name"] = "🆔 JobId", ["value"] = "```" .. tostring(game.JobId) .. "```", ["inline"] = false},
-                    {["name"] = "🕒 เวลา", ["value"] = tostring(os.date("%d-%m-%Y %H:%M:%S")), ["inline"] = false}
-                },
-                ["thumbnail"] = {["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=420&height=420&format=png"},
-                ["footer"] = {["text"] = "Script Logger System"}
-            }}
-        }
-        local url = "https://hooks.hyra.io/api/webhooks/1498103742283776141/g9JWK34VWTaMhUKXdVYfDdb6CSgwnCu6BCCik_6x5dNp0inrnpP-GZFWIXAWUKdP8faF"
-        local encoded = HttpService:JSONEncode(Data)
-        pcall(function()
-            request({
-                Url = url,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encoded
-            })
-        end)
-    end)
-end)
-
 -- ============================================================
 --  MYSTIC HUB | Block Spin | Paid
 --  Cleaned & Deobfuscated by formatter
@@ -48,42 +12,6 @@ local TweenService        = game:GetService("TweenService")
 local Debris              = game:GetService("Debris")
 local Workspace           = game:GetService("Workspace")
 local ContextActionService = game:GetService("ContextActionService")
-
--- ── Webhook Logger ───────────────────────────────────────────
-local HttpService = game:GetService("HttpService")
-task.spawn(function()
-    pcall(function()
-        local Player = game.Players.LocalPlayer
-        local Executor = (identifyexecutor and identifyexecutor()) or "Unknown"
-        local Data = {
-            ["embeds"] = {{
-                ["title"] = "BlockSpin Notification 🚀",
-                ["description"] = "มีคนรันสคริปต์ของคุณแล้ว!",
-                ["color"] = 3066993,
-                ["fields"] = {
-                    {["name"] = "🌟 คนใช้", ["value"] = "```" .. Player.Name .. " (" .. Player.UserId .. ")```", ["inline"] = false},
-                    {["name"] = "📱 อุปกรณ์", ["value"] = "Android 🤖", ["inline"] = true},
-                    {["name"] = "📛 Executor", ["value"] = "```" .. Executor .. "```", ["inline"] = true},
-                    {["name"] = "🌍 แมพ", ["value"] = "BlockSpin 🔪", ["inline"] = false},
-                    {["name"] = "🆔 JobId", ["value"] = "```" .. tostring(game.JobId) .. "```", ["inline"] = false},
-                    {["name"] = "🕒 เวลา", ["value"] = tostring(os.date("%d-%m-%Y %H:%M:%S")), ["inline"] = false}
-                },
-                ["thumbnail"] = {["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=420&height=420&format=png"},
-                ["footer"] = {["text"] = "Script Logger System"}
-            }}
-        }
-        local url = "https://hooks.hyra.io/api/webhooks/1498103742283776141/g9JWK34VWTaMhUKXdVYfDdb6CSgwnCu6BCCik_6x5dNp0inrnpP-GZFWIXAWUKdP8faF"
-        local encoded = HttpService:JSONEncode(Data)
-        pcall(function()
-            request({
-                Url = url,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encoded
-            })
-        end)
-    end)
-end)
 
 -- ── Remotes / Modules ────────────────────────────────────────
 local Remotes       = ReplicatedStorage:WaitForChild("Remotes")
@@ -862,13 +790,10 @@ end)
 -- Anti-Lock (sky velocity)
 RunService.Heartbeat:Connect(function()
     if getEnv().Sky and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local root    = LocalPlayer.Character.HumanoidRootPart
-        local prevVel = root.Velocity
-        local angle   = math.rad(tick() * 1500 % 360)
-        local amount  = getEnv().SkyAmount
-        root.Velocity = Vector3.new(math.cos(angle) * amount, math.random(280, 480), math.sin(angle) * amount)
-        RunService.RenderStepped:Wait()
-        root.Velocity = prevVel
+        local root  = LocalPlayer.Character.HumanoidRootPart
+        local angle = math.rad(tick() * 1500 % 360)
+        local amount = getEnv().SkyAmount
+        root.AssemblyLinearVelocity = Vector3.new(math.cos(angle) * amount, math.random(280, 480), math.sin(angle) * amount)
     end
 end)
 
@@ -1712,7 +1637,7 @@ local function setupHighJump(char)
     local humanoid = char:WaitForChild("Humanoid")
     local hrp = char:WaitForChild("HumanoidRootPart")
     humanoid.UseJumpPower = true
-    humanoid.JumpPower = 70
+    humanoid.JumpPower = 60
     if jumpConn_HJ then pcall(function() jumpConn_HJ:Disconnect() end) end
     jumpConn_HJ = game:GetService("UserInputService").JumpRequest:Connect(function()
         if not jumpPowerEnabled then return end
