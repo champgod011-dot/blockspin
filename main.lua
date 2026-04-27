@@ -211,7 +211,7 @@ if WindUI then
     Window = WindUI:CreateWindow({
         Title      = "MERCY HUB  |  Block Spin🔫",
         Icon       = "list",
-        Author     = "Block spin | Paid💵",
+        Author     = "Block spin | Free💵",
         Folder     = "mercyhub",
         Size       = UDim2.fromOffset(650, 400),
         Theme      = "Sky",
